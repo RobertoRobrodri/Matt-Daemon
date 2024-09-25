@@ -1,0 +1,6 @@
+*.o
+*.swp
+objects
+.DS_STORE
+matt_daemon
+.vscode
