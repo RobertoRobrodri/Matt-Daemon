@@ -82,22 +82,26 @@ bool Daemon::init_server(void) {
 	sock_in addr = this->init_socket_struct();
 	// Create the socket
 	if ((this->_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+			logger.log_entry("Failed to create socket", "ERROR");
 			throw std::runtime_error("Failed to create socket");
 	}
 	std::cout << "Socket initialized" << std::endl;
 	// Set socket options (reuse address)
 	if (setsockopt(this->_socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
 			close(_socket_fd);
+			logger.log_entry("Failed to set socket options", "ERROR");
 			throw std::runtime_error("Failed to set socket options");
 	}
 	// Bind the socket to the address and port
 	if (bind(this->_socket_fd, (const sock_addr*)&addr, sizeof(addr)) == -1) {
 			close(_socket_fd);
+			logger.log_entry("Error binding socket", "ERROR");
 			throw std::runtime_error("Error binding socket");
 	}
 	// Start listening for connections, with MAX_CLIENTS backlog
 	if (listen(this->_socket_fd, MAX_CLIENTS) == -1) {
 			close(_socket_fd);
+			logger.log_entry("Error starting to listen on socket", "ERROR");
 			throw std::runtime_error("Error starting to listen on socket");
 	}
 	std::cout << "Server is now listening" << std::endl;
@@ -154,7 +158,7 @@ void Daemon::server_listen(void) {
 	this->init_pollfd();
 	while (true)
 	{
-		ret = poll(this->_poll_fds, this->_active_fds, 0);
+		ret = poll(this->_poll_fds, this->_active_fds, -1);
 		if (ret < 0) {
 			perror("Poll error");
 			return;
@@ -163,7 +167,7 @@ void Daemon::server_listen(void) {
 			continue;
 		if (this->fd_ready() == 1)
 			return ;
-		// ping  users and disconnect inactive
+		std::cout << ret << std::endl;
 	}
 }
 
@@ -183,6 +187,8 @@ bool	Daemon::fd_ready( void )
 			this->receive_communication(i);
 			return 1;
 		}
+		std::cout << "Me cago en tu puta madre" << std::endl;
+		logger.log_entry("Esperando a la pollas", "INFO");
 	}
 	return 0;
 }
@@ -195,11 +201,11 @@ void	Daemon::accept_communication(void)
 	char ip_addres[20];
 	fd = accept(this->_socket_fd, (sock_addr*)&client_addr, &client_addr_size);
 	if (fd < 0)
-    {
-        if (errno != EWOULDBLOCK)
-          perror("  accept() failed");
-    	return ;
-    }
+	{
+		if (errno != EWOULDBLOCK)
+			perror("  accept() failed");
+			return ;
+	}
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		perror(" FCNTL failed");
@@ -217,18 +223,18 @@ void	Daemon::receive_communication(int poll_fd_pos)
 	memset(buffer, 0, MSG_SIZE); //Iniciar buffer con ceros porque mete mierda
 	len = recv(this->_poll_fds[poll_fd_pos].fd, buffer, sizeof(buffer), 0);
 	if (len < 0)
-    {
+	{
 		if (errno != EWOULDBLOCK)
 			perror("  recv() failed");
-        exit(EXIT_FAILURE);
-    }
-    if (len == 0)
-    {
+		exit(EXIT_FAILURE);
+	}
+	if (len == 0)
+	{
 		std::cout << "  Connection closed" << std::endl;
 		// Close fd >> Delete fd from poll >> Delete user from list_of_users
 		this->delete_user(poll_fd_pos);
 		return ;
-    }
+	}
 	buffer[len-1] = 0; //El intro lo ponemos a cero
 	if (buffer[0] != 0)
 	// add here a log entry with the message

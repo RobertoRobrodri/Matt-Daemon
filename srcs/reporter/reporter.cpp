@@ -2,34 +2,34 @@
 #include "../../includes/includes.hpp"
 
 Tintin_reporter::Tintin_reporter( void ) {
-  std::cout << "Default reporter constructor called" << std::endl;
-  // create directory. Ignore error if directory already exists
-  std::filesystem::create_directory(LOG_PATH);
-  // create file
-  _log_file.open(LOG_FILE, std::fstream::out | std::fstream::app);
-  // check rd_state for failbit
-  if (_log_file.fail()) {
-	  std::cout << "Error creating log file" << std::endl;
-	  exit(EXIT_FAILURE);
-  }
+	std::cout << "Default reporter constructor called" << std::endl;
+	// create directory. Ignore error if directory already exists
+	std::filesystem::create_directory(LOG_PATH);
+	// create file
+	_log_file.open(LOG_FILE, std::fstream::out | std::fstream::app);
+	// check rd_state for failbit
+	if (_log_file.fail()) {
+		std::cout << "Error creating log file" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 Tintin_reporter::Tintin_reporter( std::string str ) {
-  (void)str;
-  std::cout << "Parameter reporter constructor called" << std::endl;
-  
+	(void)str;
+	std::cout << "Parameter reporter constructor called" << std::endl;
+	
 }
 
 Tintin_reporter::Tintin_reporter( const Tintin_reporter & var ) {
 
-  std::cout << "Copy reporter constructor called" << std::endl;
-  
+	std::cout << "Copy reporter constructor called" << std::endl;
+	
 }
 
 Tintin_reporter::~Tintin_reporter( void ) {
-  std::cout << "Destructor reporter called" << std::endl;
-  // close log file
-  _log_file.close();
+	std::cout << "Destructor reporter called" << std::endl;
+	// close log file
+	_log_file.close();
 }
 
 // OVERLOADING
@@ -49,13 +49,13 @@ std::ostream &operator<<(std::ostream& os, const Tintin_reporter &tmp)
 // FUNCTIONS
 
 std::string Tintin_reporter::time_formatted() {
-    const int MAXLEN = 80;
-    char s[MAXLEN];
-    time_t t = time(0);
-	std::tm* local_time = std::localtime(&t);
+		const int MAXLEN = 80;
+		char s[MAXLEN];
+		time_t t = time(0);
+		std::tm* local_time = std::localtime(&t);
 
-    strftime(s, sizeof(s), "%d/%m/%Y-%H:%M:%S", local_time);
-    return s;
+		strftime(s, sizeof(s), "%d/%m/%Y-%H:%M:%S", local_time);
+		return s;
 }
 
 // writes to log file with timestamp

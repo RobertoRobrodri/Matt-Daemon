@@ -25,8 +25,8 @@ class	Tintin_reporter {
 		Tintin_reporter ( const Tintin_reporter & var );
 		~Tintin_reporter ( void );
 
-        // Overloading
-        Tintin_reporter &operator=	(const Tintin_reporter &tmp);
+		// Overloading
+		Tintin_reporter &operator=	(const Tintin_reporter &tmp);
 		
 		// Member functions
 		bool log_entry(std::string log_msg, std::string log_level);
