@@ -1,9 +1,13 @@
 #include "daemon.hpp"
 
+std::map<int, Daemon *> Daemon::instances;
+
 Daemon::Daemon( void ) {
 
 	std::cout << "Daemon Default constructor called" << std::endl;
 	_keep_running = true;
+	_pid = getpid();
+	instances[_pid] = this;
 	this->create_lock_file();
 	logger.log_entry("Creating server", "INFO");
 	try {
@@ -34,16 +38,13 @@ Daemon::Daemon( const Daemon & var ) {
 Daemon::~Daemon( void ) {
 	
 	std::cout << "Daemon Destructor called" << std::endl;
-	clean();
-	return ;
-}
-
-void Daemon::clean( void ) {
 	flock(_lock_file_fd, LOCK_UN);
 	close(_socket_fd);
 	close(_lock_file_fd);
 	remove(LOCK_FILE);
+	return ;
 }
+
 
 // Overloading
 Daemon & Daemon::operator=(const Daemon &tmp) {
@@ -126,6 +127,7 @@ void Daemon::Daemonize(void) {
 	if (pid > 0) { 
 		 exit(EXIT_SUCCESS);
 	}
+	
 	logger.log_entry("Entering daemon mode", "INFO");
 	logger.log_entry("started, " + std::to_string(getpid()), "INFO");
 }
@@ -259,7 +261,7 @@ void Daemon::signal_handler(int signal) {
     	switch (signal) {
     	    case SIGINT:
     	        logger.log_entry("SIGINT received, shutting down", "INFO");
-				clean();
+				instances[getpid()]->~Daemon();
     	        break;
     	    case SIGTERM:
     	        logger.log_entry("SIGTERM received, terminating", "INFO");

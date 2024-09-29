@@ -8,6 +8,7 @@
 #include <poll.h>
 #include "../../includes/includes.hpp"
 #include <vector>
+#include <map>
 
 #define	sock_in		struct sockaddr_in
 #define	sock_addr	struct sockaddr
@@ -26,6 +27,7 @@ class	Daemon {
 		int 						_socket_fd;
 		bool						_keep_running;
 		std::vector<struct pollfd>	_poll_fds;
+		int							_pid;
 
 		void	init_socket_struct(void);
 		void	init_pollfd(void);
@@ -50,8 +52,9 @@ class	Daemon {
 		bool	init_server(void);
 		void	server_listen();
 		void 	Daemonize(void);
-		void	clean( void );
 		void	create_lock_file(void);
 		static void signal_handler(int signal);
+		
+		static std::map<int, Daemon *> instances;
 };
 std::ostream &operator<<(std::ostream& os, const Daemon &tmp);
