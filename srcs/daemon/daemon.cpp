@@ -72,7 +72,7 @@ void	Daemon::init_socket_struct(void)
 	//  Convert our port to a network address (host to network)
 	_addr.sin_port        = htons(4242);
 	//  Our address as integer
-	_addr.sin_addr.s_addr = INADDR_ANY;
+	_addr.sin_addr.s_addr = INADDR_ANY; // Probar Localhost
 }
 
 bool Daemon::init_server(void) {
@@ -144,20 +144,18 @@ void Daemon::create_lock_file(void) {
 
 void	Daemon::init_pollfd(void)
 {
-	memset(this->_poll_fds, 0, sizeof(this->_poll_fds));
-	this->_poll_fds[0].fd 	   = this->_socket_fd;
-	this->_poll_fds[0].events   = POLLIN;
+	poll_fd local_struct = {this->_socket_fd, POLLIN};
+	this->_poll_fds.clear();
+	this->_poll_fds.push_back(local_struct);
 }
 
 void Daemon::server_listen(void) {
 	int ret;
 	
 	this->init_pollfd();
-	logger.log_entry("Poll waiting", "DEBUG");
 	while (true)
 	{
-		logger.log_entry(std::to_string(this->_socket_fd), "DEBUG");
-		ret = poll(this->_poll_fds, this->_active_fds, -1);
+		ret = poll(this->_poll_fds.data(), this->_poll_fds.size(), -1);
 		logger.log_entry(std::to_string(ret), "DEBUG");
 		if (ret < 0) {
 			perror("Poll error");
@@ -172,21 +170,21 @@ void Daemon::server_listen(void) {
 
 bool	Daemon::fd_ready( void )
 {
-	for (int i = 0; i < this->_active_fds; i++)
+	for (std::vector<struct pollfd>::iterator it = _poll_fds.begin(); it != _poll_fds.end(); ++it)
 	{
-		if (this->_poll_fds[i].revents == 0)
+		if (it->revents == 0)
 			continue;
-		if (this->_poll_fds[i].fd == this->_socket_fd)
+		if (it->fd == this->_socket_fd)
 		{
 			this->accept_communication();
-			return 1;
+			logger.log_entry("Nuevo usuario conectado", "INFO");
+			break ;
 		}
 		else
 		{
-			this->receive_communication(i);
-			return 1;
+			this->receive_communication(it);
+			break ;
 		}
-		logger.log_entry("Esperando a la pollas", "INFO");
 	}
 	return 0;
 }
@@ -210,17 +208,16 @@ void	Daemon::accept_communication(void)
 		return ;
 	}
 	this->add_user(fd, client_addr);
-	logger.log_entry("Un paco se ha conectado", "INFO");
 }
 
-void	Daemon::receive_communication(int poll_fd_pos)
+void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 {
 	char buffer[MSG_SIZE];
 	int len;
 
-	std::cout << "Message received" << std::endl;
+	logger.log_entry("Mensaje recibido", "INFO");
 	memset(buffer, 0, MSG_SIZE); //Iniciar buffer con ceros porque mete mierda
-	len = recv(this->_poll_fds[poll_fd_pos].fd, buffer, sizeof(buffer), 0);
+	len = recv(it->fd, buffer, sizeof(buffer), 0);
 	if (len < 0)
 	{
 		if (errno != EWOULDBLOCK)
@@ -229,9 +226,8 @@ void	Daemon::receive_communication(int poll_fd_pos)
 	}
 	if (len == 0)
 	{
-		std::cout << "  Connection closed" << std::endl;
-		// Close fd >> Delete fd from poll >> Delete user from list_of_users
-		this->delete_user(poll_fd_pos);
+		this->delete_user(it);
+		logger.log_entry("Usuario desconectado", "INFO");
 		return ;
 	}
 	buffer[len-1] = 0; //El intro lo ponemos a cero
@@ -242,19 +238,12 @@ void	Daemon::receive_communication(int poll_fd_pos)
 
 void	Daemon::add_user(int fd, sock_in client_addr)
 {
-	char ip_address[20];
-
-	this->_poll_fds[this->_active_fds].fd = fd;
-	this->_poll_fds[this->_active_fds].events = POLLIN;
-	this->_active_fds++;
+	poll_fd local_struct = {fd, POLLIN};
+	this->_poll_fds.push_back(local_struct);
 }
 
-void	Daemon::delete_user(int poll_fd_pos)
+void	Daemon::delete_user(std::vector<struct pollfd>::iterator it)
 {
-	close(this->_poll_fds[poll_fd_pos].fd);
-	for (int count = poll_fd_pos; count <= this->_active_fds - 1; count++)
-		this->_poll_fds[count] = this->_poll_fds[count + 1];
-	this->_poll_fds[this->_active_fds - 1].fd = 0;
-	this->_poll_fds[this->_active_fds - 1].events = 0;
-	this->_active_fds--;
+	close(it->fd);
+	this->_poll_fds.erase(it);
 }

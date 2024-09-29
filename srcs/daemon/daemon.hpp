@@ -7,6 +7,7 @@
 #include <csignal>
 #include <poll.h>
 #include "../../includes/includes.hpp"
+#include <vector>
 
 #define	sock_in		struct sockaddr_in
 #define	sock_addr	struct sockaddr
@@ -18,20 +19,19 @@
 class	Daemon {
 
 	private:
-		sock_in		 		_addr;
-		int 				_lock_file_fd;
-		int 				_socket_fd;
-		int 				_active_fds;
-		bool				_keep_running;
-		poll_fd				_poll_fds[MAX_CLIENTS + 1];
+		sock_in		 				_addr;
+		int 						_lock_file_fd;
+		int 						_socket_fd;
+		bool						_keep_running;
+		std::vector<struct pollfd>	_poll_fds;
 
 		void	init_socket_struct(void);
 		void	init_pollfd(void);
 		bool	fd_ready(void);
 		void	accept_communication(void);
-		void	receive_communication(int poll_fd_pos);
+		void	receive_communication(std::vector<struct pollfd>::iterator it);
 		void	add_user(int fd, sock_in client_addr);
-		void	delete_user(int poll_fd_pos);
+		void	delete_user(std::vector<struct pollfd>::iterator it);
 	public:
 
 		Daemon 			( void );
