@@ -18,13 +18,14 @@
 class	Daemon {
 
 	private:
+		sock_in		 		_addr;
 		int 				_lock_file_fd;
 		int 				_socket_fd;
 		int 				_active_fds;
 		bool				_keep_running;
-		poll_fd				_poll_fds[MAX_CLIENTS];
+		poll_fd				_poll_fds[MAX_CLIENTS + 1];
 
-		sock_in	init_socket_struct(void);
+		void	init_socket_struct(void);
 		void	init_pollfd(void);
 		bool	fd_ready(void);
 		void	accept_communication(void);

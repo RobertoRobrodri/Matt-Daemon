@@ -64,22 +64,20 @@ void	Daemon::set_keep_running(bool state) {
 	_keep_running = state;
 }
 
-sock_in	Daemon::init_socket_struct(void)
+void	Daemon::init_socket_struct(void)
 {
-	sock_in addr;
 	// Init struct that the socket needs
 	//  IPV4 addresses
-	addr.sin_family      = AF_INET;
+	_addr.sin_family      = AF_INET;
 	//  Convert our port to a network address (host to network)
-	addr.sin_port        = htons(4242);
+	_addr.sin_port        = htons(4242);
 	//  Our address as integer
-	addr.sin_addr.s_addr = INADDR_ANY;
-	return addr;
+	_addr.sin_addr.s_addr = INADDR_ANY;
 }
 
 bool Daemon::init_server(void) {
 	int opt = 1;
-	sock_in addr = this->init_socket_struct();
+	this->init_socket_struct();
 	// Create the socket
 	if ((this->_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 			logger.log_entry("Failed to create socket", "ERROR");
@@ -93,7 +91,7 @@ bool Daemon::init_server(void) {
 			throw std::runtime_error("Failed to set socket options");
 	}
 	// Bind the socket to the address and port
-	if (bind(this->_socket_fd, (const sock_addr*)&addr, sizeof(addr)) == -1) {
+	if (bind(this->_socket_fd, (const sock_addr*)&_addr, sizeof(_addr)) == -1) {
 			close(_socket_fd);
 			logger.log_entry("Error binding socket", "ERROR");
 			throw std::runtime_error("Error binding socket");
@@ -104,7 +102,6 @@ bool Daemon::init_server(void) {
 			logger.log_entry("Error starting to listen on socket", "ERROR");
 			throw std::runtime_error("Error starting to listen on socket");
 	}
-	std::cout << "Server is now listening" << std::endl;
 	return true;  // Successfully listening
 }
 
@@ -156,9 +153,12 @@ void Daemon::server_listen(void) {
 	int ret;
 	
 	this->init_pollfd();
+	logger.log_entry("Poll waiting", "DEBUG");
 	while (true)
 	{
+		logger.log_entry(std::to_string(this->_socket_fd), "DEBUG");
 		ret = poll(this->_poll_fds, this->_active_fds, -1);
+		logger.log_entry(std::to_string(ret), "DEBUG");
 		if (ret < 0) {
 			perror("Poll error");
 			return;
@@ -167,7 +167,6 @@ void Daemon::server_listen(void) {
 			continue;
 		if (this->fd_ready() == 1)
 			return ;
-		std::cout << ret << std::endl;
 	}
 }
 
@@ -187,7 +186,6 @@ bool	Daemon::fd_ready( void )
 			this->receive_communication(i);
 			return 1;
 		}
-		std::cout << "Me cago en tu puta madre" << std::endl;
 		logger.log_entry("Esperando a la pollas", "INFO");
 	}
 	return 0;
@@ -204,7 +202,7 @@ void	Daemon::accept_communication(void)
 	{
 		if (errno != EWOULDBLOCK)
 			perror("  accept() failed");
-			return ;
+		return ;
 	}
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 	{
@@ -212,6 +210,7 @@ void	Daemon::accept_communication(void)
 		return ;
 	}
 	this->add_user(fd, client_addr);
+	logger.log_entry("Un paco se ha conectado", "INFO");
 }
 
 void	Daemon::receive_communication(int poll_fd_pos)
