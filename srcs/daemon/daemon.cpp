@@ -34,11 +34,15 @@ Daemon::Daemon( const Daemon & var ) {
 Daemon::~Daemon( void ) {
 	
 	std::cout << "Daemon Destructor called" << std::endl;
+	clean();
+	return ;
+}
+
+void Daemon::clean( void ) {
 	flock(_lock_file_fd, LOCK_UN);
 	close(_socket_fd);
 	close(_lock_file_fd);
 	remove(LOCK_FILE);
-	return ;
 }
 
 // Overloading
@@ -246,4 +250,26 @@ void	Daemon::delete_user(std::vector<struct pollfd>::iterator it)
 {
 	close(it->fd);
 	this->_poll_fds.erase(it);
+}
+
+void Daemon::signal_handler(int signal) {
+	logger.log_entry("Quitting", "INFO");
+	// THIS DOES NOT WORK, USE SIGSET
+	if (signal != 0) {
+    	switch (signal) {
+    	    case SIGINT:
+    	        logger.log_entry("SIGINT received, shutting down", "INFO");
+				clean();
+    	        break;
+    	    case SIGTERM:
+    	        logger.log_entry("SIGTERM received, terminating", "INFO");
+    	        break;
+    	    case SIGHUP:
+    	        logger.log_entry("SIGHUP received, reloading configuration", "INFO");
+    	        break;
+    	    default:
+    	        logger.log_entry("Unknown signal received", "WARNING");
+    	}
+	}
+	exit(EXIT_SUCCESS);
 }

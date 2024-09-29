@@ -3,11 +3,27 @@
 
 Tintin_reporter logger;
 
-static void signal_handler(int signal) {
-	logger.log_entry("Quitting", "INFO");
-	// THIS DOES NOT WORK, USE SIGSET
-	exit(EXIT_SUCCESS);
-}
+//static void signal_handler(int signal) {
+//	logger.log_entry("Quitting", "INFO");
+//	// THIS DOES NOT WORK, USE SIGSET
+//	if (signal != 0) {
+//    	switch (signal) {
+//    	    case SIGINT:
+//    	        logger.log_entry("SIGINT received, shutting down", "INFO");
+//				clean();
+//    	        break;
+//    	    case SIGTERM:
+//    	        logger.log_entry("SIGTERM received, terminating", "INFO");
+//    	        break;
+//    	    case SIGHUP:
+//    	        logger.log_entry("SIGHUP received, reloading configuration", "INFO");
+//    	        break;
+//    	    default:
+//    	        logger.log_entry("Unknown signal received", "WARNING");
+//    	}
+//	}
+//	exit(EXIT_SUCCESS);
+//}
 
 int main()
 {
@@ -22,7 +38,7 @@ int main()
 	// init Daemon
 	Daemon_server.Daemonize();
 	// signal handler
-	std::signal(SIGINT, signal_handler);
+	std::signal(SIGINT, Daemon_server.signal_handler);
 	// listening
 	Daemon_server.server_listen();
 	return EXIT_SUCCESS;
