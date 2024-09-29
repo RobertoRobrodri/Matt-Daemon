@@ -21,7 +21,7 @@ Tintin_reporter::Tintin_reporter( std::string str ) {
 }
 
 Tintin_reporter::Tintin_reporter( const Tintin_reporter & var ) {
-
+	(void)var;
 	std::cout << "Copy reporter constructor called" << std::endl;
 	
 }
