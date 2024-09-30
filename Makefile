@@ -11,7 +11,7 @@ RESET 	= "\033[1;0m"
 NAME 		= matt_daemon
 CC 			= g++
 INCLUDE 	= -std=c++20
-CXXFLAGS 	= -Wall -Wextra -g -fsanitize=address #-werror
+CXXFLAGS 	= -Wall -Wextra -g -fsanitize=address -MMD -MP#-werror
 
 # PATHS #
 #
@@ -24,6 +24,7 @@ OBJ_PATH    	= objects
 #
 SUBFILE1_SRC = reporter.cpp
 SUBFILE2_SRC = daemon.cpp
+
 
 SRC =	main.cpp \
 		$(addprefix $(SUBFILE1_PATH)/, $(SUBFILE1_SRC)) \
@@ -44,7 +45,7 @@ $(OBJ_PATH):
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp | $(OBJ_PATH)
 	$(CC) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
 
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) Makefile
 	$(CC) $(CXXFLAGS) $(INCLUDE) $(OBJS) -o $(NAME)
 	$(GREEN) Program asembled $(RESET)
 	@echo "⠀⠀⠀	    ⣠⣴⣶⣿⣿⣷⣶⣄⣀⣀\n\
@@ -69,6 +70,7 @@ client:
 
 bonus: all client
 
+-include $(OBJS:.o=.d)
 clean:
 	$(PURPLE) CLEANING OBJECTS $(RESET)
 		rm -rf $(OBJ_PATH)
