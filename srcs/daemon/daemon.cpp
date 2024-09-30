@@ -13,7 +13,7 @@ Daemon::Daemon( void ) {
 			throw std::runtime_error("Server not listening");
 	}
 	catch (std::exception &ex) {
-	std::cout << ex.what() << std::endl;
+		std::cout << ex.what() << std::endl;
 		exit(EXIT_FAILURE);
 	}
 	logger.log_entry("Server created", "INFO");
@@ -160,7 +160,6 @@ void Daemon::server_listen(void) {
 	while (true)
 	{
 		ret = poll(this->_poll_fds.data(), this->_poll_fds.size(), -1);
-		logger.log_entry(std::to_string(ret), "DEBUG");
 		if (ret < 0) {
 			perror("Poll error");
 			return;
@@ -218,8 +217,7 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 	char buffer[MSG_SIZE];
 	int len;
 
-	logger.log_entry("Mensaje recibido", "INFO");
-	memset(buffer, 0, MSG_SIZE); //Iniciar buffer con ceros porque mete mierda
+	memset(buffer, 0, MSG_SIZE); //Iniciar buffer
 	len = recv(it->fd, buffer, sizeof(buffer), 0);
 	if (len < 0)
 	{
@@ -235,8 +233,17 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 	}
 	buffer[len-1] = 0; //El intro lo ponemos a cero
 	if (buffer[0] != 0)
-	// add here a log entry with the message
+	{
+		// add here a log entry with the message
 		logger.log_entry(buffer, "INFO");
+		// check if QUIT msg has been sent
+		if (strcmp(buffer, "quit") == 0) // Character sensitive
+		{
+			logger.log_entry("Quitting", "INFO");
+			instances[getpid()]->~Daemon();
+			exit(EXIT_SUCCESS);
+		}
+	}
 }
 
 void	Daemon::add_user(int fd)
@@ -252,7 +259,6 @@ void	Daemon::delete_user(std::vector<struct pollfd>::iterator it)
 }
 
 void Daemon::signal_handler(int signal) {
-	logger.log_entry("Quitting", "INFO");
 	// THIS DOES NOT WORK, USE SIGSET
 	if (signal != 0) {
     	switch (signal) {

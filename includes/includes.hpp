@@ -13,6 +13,4 @@
 #include <string.h>
 #include "../srcs/reporter/reporter.hpp"
 
-void Daemonize();
-
 extern Tintin_reporter logger;
