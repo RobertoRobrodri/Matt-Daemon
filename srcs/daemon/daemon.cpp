@@ -126,8 +126,8 @@ void Daemon::Daemonize(void) {
 		 exit(EXIT_SUCCESS);
 	}
 	instances[getpid()] = this;
-	logger.log_entry("Entering daemon mode", "INFO");
-	logger.log_entry("started, " + std::to_string(getpid()), "INFO");
+	logger.log_entry("Entering Daemon mode", "INFO");
+	logger.log_entry("started. PID: " + std::to_string(getpid()) + ".", "INFO");
 }
 
 // https://stackoverflow.com/questions/1599459/optimal-lock-file-method
@@ -180,7 +180,7 @@ bool	Daemon::fd_ready( void )
 		if (it->fd == this->_socket_fd)
 		{
 			this->accept_communication();
-			logger.log_entry("Nuevo usuario conectado", "INFO");
+			logger.log_entry("New user connected", "INFO");
 			break ;
 		}
 		else
@@ -233,16 +233,19 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 	}
 	buffer[len-1] = 0; //El intro lo ponemos a cero
 	if (buffer[0] != 0)
-	{
-		// add here a log entry with the message
-		logger.log_entry(buffer, "INFO");
+	{	
 		// check if QUIT msg has been sent
 		if (strcmp(buffer, "quit") == 0) // Character sensitive
 		{
+			logger.log_entry("Request quit.", "INFO");
 			logger.log_entry("Quitting", "INFO");
 			instances[getpid()]->~Daemon();
 			exit(EXIT_SUCCESS);
 		}
+		// add here a log entry with the message
+		std::string user_input("User input: ");
+		user_input+= buffer;
+		logger.log_entry(user_input, "LOG");
 	}
 }
 
