@@ -148,7 +148,7 @@ void Daemon::create_lock_file(void) {
 
 void	Daemon::init_pollfd(void)
 {
-	poll_fd local_struct = {this->_socket_fd, POLLIN};
+	poll_fd local_struct = {this->_socket_fd, POLLIN, 0};
 	this->_poll_fds.clear();
 	this->_poll_fds.push_back(local_struct);
 }
@@ -198,7 +198,6 @@ void	Daemon::accept_communication(void)
 	int 	fd = 0;
 	sock_in client_addr;
 	socklen_t client_addr_size = sizeof(client_addr);
-	char ip_addres[20];
 	fd = accept(this->_socket_fd, (sock_addr*)&client_addr, &client_addr_size);
 	if (fd < 0)
 	{
@@ -211,7 +210,7 @@ void	Daemon::accept_communication(void)
 		perror(" FCNTL failed");
 		return ;
 	}
-	this->add_user(fd, client_addr);
+	this->add_user(fd);
 }
 
 void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
@@ -240,9 +239,9 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 		logger.log_entry(buffer, "INFO");
 }
 
-void	Daemon::add_user(int fd, sock_in client_addr)
+void	Daemon::add_user(int fd)
 {
-	poll_fd local_struct = {fd, POLLIN};
+	poll_fd local_struct = {fd, POLLIN, 0};
 	this->_poll_fds.push_back(local_struct);
 }
 

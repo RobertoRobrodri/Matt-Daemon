@@ -34,7 +34,7 @@ class	Daemon {
 		bool	fd_ready(void);
 		void	accept_communication(void);
 		void	receive_communication(std::vector<struct pollfd>::iterator it);
-		void	add_user(int fd, sock_in client_addr);
+		void	add_user(int fd);
 		void	delete_user(std::vector<struct pollfd>::iterator it);
 	public:
 
