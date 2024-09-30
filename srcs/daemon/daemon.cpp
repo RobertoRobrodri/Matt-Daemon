@@ -136,12 +136,14 @@ void Daemon::create_lock_file(void) {
 	_lock_file_fd = open(LOCK_FILE, O_RDWR | O_CREAT, 0666);
 	if (_lock_file_fd < 0) {
 		logger.log_entry("Error creating lock file", "ERROR");
+		logger.log_entry("Quitting", "INFO");
 		exit(EXIT_FAILURE);
 	}
 	// lock file
 	if (flock(_lock_file_fd, LOCK_EX | LOCK_NB) == -1)
 	{
-		logger.log_entry("Error acquiring lock", "INFO");
+		logger.log_entry("Error file locked", "ERROR");
+		logger.log_entry("Quitting", "INFO");
 		exit(EXIT_FAILURE);  
 	}
 }
