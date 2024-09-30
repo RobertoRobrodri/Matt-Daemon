@@ -6,8 +6,6 @@ Daemon::Daemon( void ) {
 
 	std::cout << "Daemon Default constructor called" << std::endl;
 	_keep_running = true;
-	_pid = getpid();
-	instances[_pid] = this;
 	this->create_lock_file();
 	logger.log_entry("Creating server", "INFO");
 	try {
@@ -127,7 +125,7 @@ void Daemon::Daemonize(void) {
 	if (pid > 0) { 
 		 exit(EXIT_SUCCESS);
 	}
-	
+	instances[getpid()] = this;
 	logger.log_entry("Entering daemon mode", "INFO");
 	logger.log_entry("started, " + std::to_string(getpid()), "INFO");
 }
