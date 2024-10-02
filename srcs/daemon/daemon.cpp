@@ -135,6 +135,7 @@ void Daemon::create_lock_file(void) {
 	// create file
 	_lock_file_fd = open(LOCK_FILE, O_RDWR | O_CREAT, 0666);
 	if (_lock_file_fd < 0) {
+		std::cout << "Can't open or creating :" << LOCK_FILE << std::endl;
 		logger.log_entry("Error creating lock file", "ERROR");
 		logger.log_entry("Quitting", "INFO");
 		exit(EXIT_FAILURE);
@@ -142,6 +143,7 @@ void Daemon::create_lock_file(void) {
 	// lock file
 	if (flock(_lock_file_fd, LOCK_EX | LOCK_NB) == -1)
 	{
+		std::cout << "Can't open :" << LOCK_FILE << std::endl;
 		logger.log_entry("Error file locked", "ERROR");
 		logger.log_entry("Quitting", "INFO");
 		exit(EXIT_FAILURE);  
@@ -264,21 +266,41 @@ void	Daemon::delete_user(std::vector<struct pollfd>::iterator it)
 }
 
 void Daemon::signal_handler(int signal) {
-	// THIS DOES NOT WORK, USE SIGSET
 	if (signal != 0) {
     	switch (signal) {
     	    case SIGINT:
-    	        logger.log_entry("SIGINT received, shutting down", "INFO");
+    	        logger.log_entry("Signal handler. SIGINT received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
 				instances[getpid()]->~Daemon();
     	        break;
     	    case SIGTERM:
-    	        logger.log_entry("SIGTERM received, terminating", "INFO");
+    	        logger.log_entry("Signal handler. SIGTERM received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
+				instances[getpid()]->~Daemon();
     	        break;
     	    case SIGHUP:
-    	        logger.log_entry("SIGHUP received, reloading configuration", "INFO");
+    	        logger.log_entry("Signal handler. SIGHUP received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
+				instances[getpid()]->~Daemon();
+    	        break;
+			case SIGQUIT:
+				logger.log_entry("Signal handler. SIGHUP received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
+				instances[getpid()]->~Daemon();
+    	        break;
+			case SIGABRT:
+				logger.log_entry("Signal handler. SIGHUP received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
+				instances[getpid()]->~Daemon();
+    	        break;
+			case SIGKILL:
+				logger.log_entry("Signal handler. SIGHUP received.", "INFO");
+				logger.log_entry("Quitting", "INFO");
+				instances[getpid()]->~Daemon();
     	        break;
     	    default:
-    	        logger.log_entry("Unknown signal received", "WARNING");
+    	        logger.log_entry("Signal handler. Probably we don't need to handle this sh**", "WARNING");
+				return;
     	}
 	}
 	exit(EXIT_SUCCESS);

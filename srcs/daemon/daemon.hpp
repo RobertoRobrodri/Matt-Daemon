@@ -27,7 +27,6 @@ class	Daemon {
 		int 						_socket_fd;
 		bool						_keep_running;
 		std::vector<struct pollfd>	_poll_fds;
-		int							_pid;
 
 		void	init_socket_struct(void);
 		void	init_pollfd(void);
