@@ -184,7 +184,6 @@ bool	Daemon::fd_ready( void )
 		if (it->fd == this->_socket_fd)
 		{
 			this->accept_communication();
-			logger.log_entry("New user connected", "INFO");
 			break ;
 		}
 		else
@@ -213,7 +212,13 @@ void	Daemon::accept_communication(void)
 		perror(" FCNTL failed");
 		return ;
 	}
-	this->add_user(fd);
+	if (this->_poll_fds.size() -1 < MAX_CLIENTS)
+	{
+		this->add_user(fd);
+		logger.log_entry("New user connected", "INFO");
+	}
+	else
+		logger.log_entry("More than 3 clients tried to connect", "ERROR");
 }
 
 void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
