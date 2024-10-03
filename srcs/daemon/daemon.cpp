@@ -218,7 +218,10 @@ void	Daemon::accept_communication(void)
 		logger.log_entry("New user connected", "INFO");
 	}
 	else
-		logger.log_entry("More than 3 clients tried to connect", "ERROR");
+	{
+		logger.log_entry("Max clients reached. Connection refused.", "ERROR");
+		close(fd);
+	}
 }
 
 void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
