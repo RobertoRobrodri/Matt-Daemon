@@ -2,14 +2,20 @@
 #include "../../includes/includes.hpp"
 
 Tintin_reporter::Tintin_reporter( void ) {
+	std::error_code ec;
 	std::cout << "Default reporter constructor called" << std::endl;
 	// create directory. Ignore error if directory already exists
-	std::filesystem::create_directory(LOG_PATH);
+	std::filesystem::create_directory(LOG_PATH, ec);
+	if(ec) {
+		std::cout << "Error creating log file directory. Please run with superuser permissions." << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
 	// create file
 	_log_file.open(LOG_FILE, std::fstream::out | std::fstream::app);
 	// check rd_state for failbit
 	if (_log_file.fail()) {
-		std::cout << "Error creating log file" << std::endl;
+		std::cout << "Error creating log file." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 }
