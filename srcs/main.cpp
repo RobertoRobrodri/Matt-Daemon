@@ -5,11 +5,6 @@ Tintin_reporter logger;
 
 int main()
 {
-	if (geteuid())
-	{
-		std::cout << "Make sure you have root privileges" << std::endl;
-		return EXIT_FAILURE ;
-	}
 	// create server
 	logger.log_entry("Started", "INFO");
 	Daemon Daemon_server;

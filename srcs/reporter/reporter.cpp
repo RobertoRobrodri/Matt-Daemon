@@ -3,11 +3,15 @@
 
 Tintin_reporter::Tintin_reporter( void ) {
 	std::error_code ec;
-	std::cout << "Default reporter constructor called" << std::endl;
+	if (geteuid())
+	{
+		std::cout << "Make sure you have root privileges." << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	// create directory. Ignore error if directory already exists
 	std::filesystem::create_directory(LOG_PATH, ec);
 	if(ec) {
-		std::cout << "Error creating log file directory. Please run with superuser permissions." << std::endl;
+		std::cout << "Error creating log file directory." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -22,18 +26,13 @@ Tintin_reporter::Tintin_reporter( void ) {
 
 Tintin_reporter::Tintin_reporter( std::string str ) {
 	(void)str;
-	std::cout << "Parameter reporter constructor called" << std::endl;
-	
 }
 
 Tintin_reporter::Tintin_reporter( const Tintin_reporter & var ) {
 	(void)var;
-	std::cout << "Copy reporter constructor called" << std::endl;
-	
 }
 
 Tintin_reporter::~Tintin_reporter( void ) {
-	std::cout << "Destructor reporter called" << std::endl;
 	// close log file
 	_log_file.close();
 }
@@ -42,7 +41,6 @@ Tintin_reporter::~Tintin_reporter( void ) {
 Tintin_reporter & Tintin_reporter::operator=(const Tintin_reporter &tmp)
 {
 	(void)tmp;
-	std::cout << "Tintin_reporter Operator equalizer called" << std::endl;
 	return *this;
 }
 

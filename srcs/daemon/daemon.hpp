@@ -14,7 +14,6 @@
 #define	sock_addr	struct sockaddr
 #define	poll_fd		struct pollfd
 #define LOCK_FILE "/var/lock/matt_daemon.lock"
-// TODO meter dependencias hpp en Makefile
 // #define LOCK_FILE "/Users/cx02938/Desktop/matt_daemon.lock"
 #define MAX_CLIENTS 3
 #define MSG_SIZE	512

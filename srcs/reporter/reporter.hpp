@@ -10,7 +10,6 @@
 #define LOG_PATH  "/var/log/matt_daemon/"
 #define LOG_NAME  "matt_daemon.log"
 #define LOG_FILE  LOG_PATH LOG_NAME
-// #define LOG_FORMAT "[{}] [ {} ] - Matt_daemon: {}." // Reminder to use c++20 format function but i cant install that shit
 class	Tintin_reporter {
 
 	private:

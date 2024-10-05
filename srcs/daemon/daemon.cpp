@@ -4,7 +4,6 @@ std::map<int, Daemon *> Daemon::instances;
 
 Daemon::Daemon( void ) {
 
-	std::cout << "Daemon Default constructor called" << std::endl;
 	_keep_running = true;
 	this->create_lock_file();
 	logger.log_entry("Creating server", "INFO");
@@ -22,20 +21,16 @@ Daemon::Daemon( void ) {
 Daemon::Daemon( std::string port, std::string host ) {
 	(void)port;
 	(void)host;
-	std::cout << "Daemon Parameter constructor called" << std::endl;
 	return ;
 }
 
 Daemon::Daemon( const Daemon & var ) {
-	
-	std::cout << "Daemon Copy constructor called" << std::endl;
 	*this = var;
 	return ;
 }
 
 Daemon::~Daemon( void ) {
 	
-	std::cout << "Daemon Destructor called" << std::endl;
 	flock(_lock_file_fd, LOCK_UN);
 	close(_socket_fd);
 	close(_lock_file_fd);
@@ -47,13 +42,11 @@ Daemon::~Daemon( void ) {
 // Overloading
 Daemon & Daemon::operator=(const Daemon &tmp) {
 	(void) tmp;
-	std::cout << "Daemon Operator equalizer called" << std::endl;
 	return (*this);
 }
 
 std::ostream &operator<<(std::ostream& os, const Daemon &tmp) {
 	(void) tmp;
-	os << std::endl << "Daemon Operator output called" << std::endl;
 	return (os);
 }
 
@@ -86,7 +79,6 @@ bool Daemon::init_server(void) {
 			logger.log_entry("Failed to create socket", "ERROR");
 			throw std::runtime_error("Failed to create socket");
 	}
-	std::cout << "Socket initialized" << std::endl;
 	// Set socket options (reuse address)
 	if (setsockopt(this->_socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
 			close(_socket_fd);
@@ -229,7 +221,7 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 	char buffer[MSG_SIZE];
 	int len;
 
-	memset(buffer, 0, MSG_SIZE); //Iniciar buffer
+	memset(buffer, 0, MSG_SIZE);
 	len = recv(it->fd, buffer, sizeof(buffer), 0);
 	if (len < 0)
 	{
@@ -243,7 +235,7 @@ void	Daemon::receive_communication(std::vector<struct pollfd>::iterator it)
 		logger.log_entry("Usuario desconectado", "INFO");
 		return ;
 	}
-	buffer[len-1] = 0; //El intro lo ponemos a cero
+	buffer[len-1] = 0;
 	if (buffer[0] != 0)
 	{	
 		// check if QUIT msg has been sent
